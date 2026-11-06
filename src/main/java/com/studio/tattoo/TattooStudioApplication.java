@@ -1,13 +1,12 @@
-package com.anderson.tattostudio;
+package com.studio.tattoo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TattoStudioApplication {
+public class TattooStudioApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(TattoStudioApplication.class, args);
+        SpringApplication.run(TattooStudioApplication.class, args);
     }
-
 }
