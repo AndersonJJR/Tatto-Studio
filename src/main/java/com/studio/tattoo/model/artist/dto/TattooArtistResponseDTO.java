@@ -2,9 +2,11 @@ package com.studio.tattoo.model.artist.dto;
 
 import com.studio.tattoo.model.artist.TattooArtist;
 
+import java.util.UUID;
+
 public record TattooArtistResponseDTO(
-        Long id,
-        Long userId,
+        UUID id,
+        UUID userId,
         String name,
         String email,
         String phone,

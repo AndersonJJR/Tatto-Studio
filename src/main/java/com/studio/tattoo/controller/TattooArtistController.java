@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/artists")
@@ -33,7 +34,7 @@ public class TattooArtistController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Busca os detalhes de um tatuador pelo ID")
-    public ResponseEntity<TattooArtistResponseDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<TattooArtistResponseDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(tattooArtistService.findById(id));
     }
 
@@ -42,7 +43,7 @@ public class TattooArtistController {
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Atualiza o perfil do tatuador autenticado")
     public ResponseEntity<TattooArtistResponseDTO> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody CreateTattooArtistDTO dto,
             @AuthenticationPrincipal User authenticatedUser) {
         return ResponseEntity.ok(tattooArtistService.update(id, dto, authenticatedUser));

@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/appointments")
@@ -50,7 +51,7 @@ public class AppointmentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Busca detalhes de um agendamento específico")
     public ResponseEntity<AppointmentResponseDTO> findById(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @AuthenticationPrincipal User authenticatedUser) {
         return ResponseEntity.ok(appointmentService.findById(id, authenticatedUser));
     }
@@ -59,7 +60,7 @@ public class AppointmentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Atualiza os dados de um agendamento")
     public ResponseEntity<AppointmentResponseDTO> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateAppointmentDTO dto,
             @AuthenticationPrincipal User authenticatedUser) {
         return ResponseEntity.ok(appointmentService.update(id, dto, authenticatedUser));
@@ -69,7 +70,7 @@ public class AppointmentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Atualiza o status do agendamento (Ex: CONFIRMED pelo tatuador, CANCELLED por cliente/tatuador)")
     public ResponseEntity<AppointmentResponseDTO> updateStatus(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @RequestParam AppointmentStatus status,
             @AuthenticationPrincipal User authenticatedUser) {
         return ResponseEntity.ok(appointmentService.updateStatus(id, status, authenticatedUser));
@@ -79,7 +80,7 @@ public class AppointmentController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Cancela um agendamento")
     public ResponseEntity<AppointmentResponseDTO> cancel(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @AuthenticationPrincipal User authenticatedUser) {
         return ResponseEntity.ok(appointmentService.cancel(id, authenticatedUser));
     }

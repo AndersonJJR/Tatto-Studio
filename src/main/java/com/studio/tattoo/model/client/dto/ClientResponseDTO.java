@@ -2,9 +2,11 @@ package com.studio.tattoo.model.client.dto;
 
 import com.studio.tattoo.model.client.Client;
 
+import java.util.UUID;
+
 public record ClientResponseDTO(
-        Long id,
-        Long userId,
+        UUID id,
+        UUID userId,
         String name,
         String email,
         String phone,

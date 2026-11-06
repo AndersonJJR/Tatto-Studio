@@ -17,6 +17,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,14 +39,19 @@ class PortfolioItemServiceTest {
     private User otherArtistUser;
     private TattooArtist artist;
     private TattooArtist otherArtist;
+    private UUID artistId;
+    private UUID itemId;
 
     @BeforeEach
     void setUp() {
-        artistUser = User.builder().id(1L).name("Beto Ink").email("beto@studio.com").role(Role.ROLE_ARTIST).build();
-        otherArtistUser = User.builder().id(2L).name("Outro Tatuador").email("outro@studio.com").role(Role.ROLE_ARTIST).build();
+        artistId = UUID.randomUUID();
+        itemId = UUID.randomUUID();
 
-        artist = TattooArtist.builder().id(10L).user(artistUser).name("Beto Ink").build();
-        otherArtist = TattooArtist.builder().id(20L).user(otherArtistUser).name("Outro Tatuador").build();
+        artistUser = User.builder().id(UUID.randomUUID()).name("Beto Ink").email("beto@studio.com").role(Role.ROLE_ARTIST).build();
+        otherArtistUser = User.builder().id(UUID.randomUUID()).name("Outro Tatuador").email("outro@studio.com").role(Role.ROLE_ARTIST).build();
+
+        artist = TattooArtist.builder().id(artistId).user(artistUser).name("Beto Ink").build();
+        otherArtist = TattooArtist.builder().id(UUID.randomUUID()).user(otherArtistUser).name("Outro Tatuador").build();
     }
 
     @Test
@@ -61,7 +67,7 @@ class PortfolioItemServiceTest {
         when(tattooArtistService.findEntityByUserEmail(artistUser.getEmail())).thenReturn(artist);
 
         PortfolioItem savedItem = PortfolioItem.builder()
-                .id(50L)
+                .id(itemId)
                 .title(dto.title())
                 .description(dto.description())
                 .imageUrl(dto.imageUrl())
@@ -75,10 +81,10 @@ class PortfolioItemServiceTest {
         PortfolioItemResponseDTO response = portfolioItemService.create(dto, artistUser);
 
         assertNotNull(response);
-        assertEquals(50L, response.id());
+        assertEquals(itemId, response.id());
         assertEquals("Tatuagem Oriental Samurai", response.title());
         assertEquals("Oriental", response.styleTag());
-        assertEquals(10L, response.artistId());
+        assertEquals(artistId, response.artistId());
         verify(portfolioItemRepository).save(any(PortfolioItem.class));
     }
 
@@ -86,14 +92,14 @@ class PortfolioItemServiceTest {
     @DisplayName("Deve impedir a alteração de item de portfólio pertencente a outro artista")
     void shouldDenyUpdateFromDifferentArtist() {
         PortfolioItem existingItem = PortfolioItem.builder()
-                .id(50L)
+                .id(itemId)
                 .title("Tatuagem da Ana")
                 .imageUrl("https://images.example.com/item.jpg")
                 .styleTag("Fineline")
-                .artist(otherArtist) // Pertence ao otherArtist
+                .artist(otherArtist)
                 .build();
 
-        when(portfolioItemRepository.findById(50L)).thenReturn(Optional.of(existingItem));
+        when(portfolioItemRepository.findById(itemId)).thenReturn(Optional.of(existingItem));
 
         CreatePortfolioItemDTO updateDto = new CreatePortfolioItemDTO(
                 "Tentativa de Hack",
@@ -103,7 +109,7 @@ class PortfolioItemServiceTest {
         );
 
         assertThrows(AccessDeniedException.class, () ->
-                portfolioItemService.update(50L, updateDto, artistUser)
+                portfolioItemService.update(itemId, updateDto, artistUser)
         );
 
         verify(portfolioItemRepository, never()).save(any(PortfolioItem.class));

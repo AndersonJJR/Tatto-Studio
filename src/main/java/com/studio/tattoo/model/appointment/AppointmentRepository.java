@@ -5,18 +5,19 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+public interface AppointmentRepository extends JpaRepository<Appointment, UUID> {
 
-    List<Appointment> findByClientId(Long clientId);
+    List<Appointment> findByClientId(UUID clientId);
 
-    List<Appointment> findByArtistId(Long artistId);
+    List<Appointment> findByArtistId(UUID artistId);
 
-    List<Appointment> findByArtistIdAndStatus(Long artistId, AppointmentStatus status);
+    List<Appointment> findByArtistIdAndStatus(UUID artistId, AppointmentStatus status);
 
     List<Appointment> findByArtistIdAndSessionDateBetween(
-            Long artistId,
+            UUID artistId,
             LocalDateTime startDate,
             LocalDateTime endDate
     );

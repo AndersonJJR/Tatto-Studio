@@ -3,14 +3,15 @@ package com.studio.tattoo.model.portfolio.dto;
 import com.studio.tattoo.model.portfolio.PortfolioItem;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record PortfolioItemResponseDTO(
-        Long id,
+        UUID id,
         String title,
         String description,
         String imageUrl,
         String styleTag,
-        Long artistId,
+        UUID artistId,
         String artistName,
         LocalDateTime createdAt
 ) {

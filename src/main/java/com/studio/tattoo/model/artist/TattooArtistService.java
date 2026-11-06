@@ -1,6 +1,5 @@
 package com.studio.tattoo.model.artist;
 
-import com.studio.tattoo.exception.BusinessRuleException;
 import com.studio.tattoo.model.artist.dto.CreateTattooArtistDTO;
 import com.studio.tattoo.model.artist.dto.TattooArtistResponseDTO;
 import com.studio.tattoo.model.user.User;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,12 +30,12 @@ public class TattooArtistService {
     }
 
     @Transactional(readOnly = true)
-    public TattooArtistResponseDTO findById(Long id) {
+    public TattooArtistResponseDTO findById(UUID id) {
         return new TattooArtistResponseDTO(findEntityById(id));
     }
 
     @Transactional(readOnly = true)
-    public TattooArtist findEntityById(Long id) {
+    public TattooArtist findEntityById(UUID id) {
         return tattooArtistRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tatuador não encontrado com o ID: " + id));
     }
@@ -47,7 +47,7 @@ public class TattooArtistService {
     }
 
     @Transactional
-    public TattooArtistResponseDTO update(Long id, CreateTattooArtistDTO dto, User authenticatedUser) {
+    public TattooArtistResponseDTO update(UUID id, CreateTattooArtistDTO dto, User authenticatedUser) {
         TattooArtist artist = findEntityById(id);
 
         if (!artist.getUser().getId().equals(authenticatedUser.getId())) {

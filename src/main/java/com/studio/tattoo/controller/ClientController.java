@@ -14,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/clients")
 @RequiredArgsConstructor
@@ -42,7 +44,7 @@ public class ClientController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Busca o perfil de um cliente pelo ID")
-    public ResponseEntity<ClientResponseDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<ClientResponseDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(clientService.findById(id));
     }
 }

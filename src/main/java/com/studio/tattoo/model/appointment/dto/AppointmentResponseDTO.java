@@ -4,17 +4,18 @@ import com.studio.tattoo.model.appointment.Appointment;
 import com.studio.tattoo.model.appointment.AppointmentStatus;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record AppointmentResponseDTO(
-        Long id,
+        UUID id,
         LocalDateTime sessionDate,
         Integer estimatedDurationMinutes,
         AppointmentStatus status,
         String designSpecifications,
-        Long clientId,
+        UUID clientId,
         String clientName,
         String clientPhone,
-        Long artistId,
+        UUID artistId,
         String artistName,
         LocalDateTime createdAt
 ) {

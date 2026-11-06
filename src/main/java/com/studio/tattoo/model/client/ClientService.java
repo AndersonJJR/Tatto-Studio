@@ -5,9 +5,10 @@ import com.studio.tattoo.model.client.dto.CreateClientDTO;
 import com.studio.tattoo.model.user.User;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +23,12 @@ public class ClientService {
     }
 
     @Transactional(readOnly = true)
-    public ClientResponseDTO findById(Long id) {
+    public ClientResponseDTO findById(UUID id) {
         return new ClientResponseDTO(findEntityById(id));
     }
 
     @Transactional(readOnly = true)
-    public Client findEntityById(Long id) {
+    public Client findEntityById(UUID id) {
         return clientRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado com o ID: " + id));
     }

@@ -19,6 +19,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -50,6 +52,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("Deve registrar novo usuário com sucesso e retornar 201 Created")
     void shouldRegisterUserSuccessfully() throws Exception {
+        UUID userId = UUID.randomUUID();
         RegisterRequestDTO dto = new RegisterRequestDTO(
                 "Marina Silva",
                 "marina@gmail.com",
@@ -62,7 +65,7 @@ class AuthControllerTest {
         );
 
         User savedUser = User.builder()
-                .id(1L)
+                .id(userId)
                 .name("Marina Silva")
                 .email("marina@gmail.com")
                 .role(Role.ROLE_CLIENT)
@@ -76,6 +79,7 @@ class AuthControllerTest {
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").value("jwt-token-simulado"))
+                .andExpect(jsonPath("$.userId").value(userId.toString()))
                 .andExpect(jsonPath("$.email").value("marina@gmail.com"))
                 .andExpect(jsonPath("$.role").value("ROLE_CLIENT"));
     }
@@ -84,10 +88,10 @@ class AuthControllerTest {
     @DisplayName("Deve retornar 400 Bad Request ao tentar registrar usuário com e-mail inválido ou campos em branco")
     void shouldReturnBadRequestWhenValidationFails() throws Exception {
         RegisterRequestDTO invalidDto = new RegisterRequestDTO(
-                "", // nome vazio
-                "email-invalido", // formato inválido
-                "123", // senha menor que 6 chars
-                null, // role nula
+                "",
+                "email-invalido",
+                "123",
+                null,
                 null,
                 null,
                 null,

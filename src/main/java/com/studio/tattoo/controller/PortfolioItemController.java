@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/portfolio")
@@ -28,14 +29,14 @@ public class PortfolioItemController {
     @GetMapping
     @Operation(summary = "Lista pública dos itens de portfólio, com filtros opcionais por artista e estilo")
     public ResponseEntity<List<PortfolioItemResponseDTO>> findAll(
-            @RequestParam(required = false) Long artistId,
+            @RequestParam(required = false) UUID artistId,
             @RequestParam(required = false) String styleTag) {
         return ResponseEntity.ok(portfolioItemService.findAll(artistId, styleTag));
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Consulta pública de um item específico do portfólio por ID")
-    public ResponseEntity<PortfolioItemResponseDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<PortfolioItemResponseDTO> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(portfolioItemService.findById(id));
     }
 
@@ -55,7 +56,7 @@ public class PortfolioItemController {
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Atualiza um item do portfólio do tatuador autenticado")
     public ResponseEntity<PortfolioItemResponseDTO> update(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody CreatePortfolioItemDTO dto,
             @AuthenticationPrincipal User authenticatedUser) {
         return ResponseEntity.ok(portfolioItemService.update(id, dto, authenticatedUser));
@@ -66,7 +67,7 @@ public class PortfolioItemController {
     @SecurityRequirement(name = "Bearer Authentication")
     @Operation(summary = "Remove um item do portfólio do tatuador autenticado")
     public ResponseEntity<Void> delete(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @AuthenticationPrincipal User authenticatedUser) {
         portfolioItemService.delete(id, authenticatedUser);
         return ResponseEntity.noContent().build();

@@ -6,10 +6,11 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public record CreateAppointmentDTO(
         @NotNull(message = "O ID do tatuador é obrigatório")
-        Long artistId,
+        UUID artistId,
 
         @NotNull(message = "A data e hora da sessão são obrigatórias")
         @Future(message = "A data da sessão deve ser futura")

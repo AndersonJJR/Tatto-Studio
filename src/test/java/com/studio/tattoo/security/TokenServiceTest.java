@@ -7,6 +7,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TokenServiceTest {
@@ -16,15 +18,16 @@ class TokenServiceTest {
     @BeforeEach
     void setUp() {
         tokenService = new TokenService();
-        ReflectionTestUtils.setField(tokenService, "secret", "super-secret-key-for-testing-purposes-12345");
+        // Chave HMAC-SHA de pelo menos 256 bits para o JJWT
+        ReflectionTestUtils.setField(tokenService, "secret", "super-secret-key-for-testing-purposes-1234567890-must-be-long-enough");
         ReflectionTestUtils.setField(tokenService, "expirationHours", 2L);
     }
 
     @Test
-    @DisplayName("Deve gerar um token JWT válido para um usuário")
+    @DisplayName("Deve gerar um token JWT válido para um usuário com JJWT")
     void shouldGenerateValidToken() {
         User user = User.builder()
-                .id(1L)
+                .id(UUID.randomUUID())
                 .name("Carlos Tatuador")
                 .email("carlos@studio.com")
                 .role(Role.ROLE_ARTIST)

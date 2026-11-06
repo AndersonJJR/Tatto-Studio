@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -68,14 +69,14 @@ public class AppointmentService {
     }
 
     @Transactional(readOnly = true)
-    public AppointmentResponseDTO findById(Long id, User authenticatedUser) {
+    public AppointmentResponseDTO findById(UUID id, User authenticatedUser) {
         Appointment appointment = findEntityById(id);
         validateAppointmentAccess(appointment, authenticatedUser);
         return new AppointmentResponseDTO(appointment);
     }
 
     @Transactional
-    public AppointmentResponseDTO updateStatus(Long id, AppointmentStatus newStatus, User authenticatedUser) {
+    public AppointmentResponseDTO updateStatus(UUID id, AppointmentStatus newStatus, User authenticatedUser) {
         Appointment appointment = findEntityById(id);
         validateAppointmentAccess(appointment, authenticatedUser);
 
@@ -91,10 +92,8 @@ public class AppointmentService {
         boolean isClient = appointment.getClient().getUser().getId().equals(authenticatedUser.getId());
 
         if (newStatus == AppointmentStatus.CANCELLED) {
-            // Ambos podem cancelar se forem partes do agendamento
             appointment.setStatus(AppointmentStatus.CANCELLED);
         } else if (newStatus == AppointmentStatus.CONFIRMED || newStatus == AppointmentStatus.FINISHED) {
-            // Apenas o tatuador pode confirmar ou finalizar a sessão
             if (!isArtist) {
                 throw new AccessDeniedException("Apenas o tatuador responsável pode confirmar ou finalizar o agendamento.");
             }
@@ -108,7 +107,7 @@ public class AppointmentService {
     }
 
     @Transactional
-    public AppointmentResponseDTO update(Long id, UpdateAppointmentDTO dto, User authenticatedUser) {
+    public AppointmentResponseDTO update(UUID id, UpdateAppointmentDTO dto, User authenticatedUser) {
         Appointment appointment = findEntityById(id);
         validateAppointmentAccess(appointment, authenticatedUser);
 
@@ -138,11 +137,11 @@ public class AppointmentService {
     }
 
     @Transactional
-    public AppointmentResponseDTO cancel(Long id, User authenticatedUser) {
+    public AppointmentResponseDTO cancel(UUID id, User authenticatedUser) {
         return updateStatus(id, AppointmentStatus.CANCELLED, authenticatedUser);
     }
 
-    private Appointment findEntityById(Long id) {
+    private Appointment findEntityById(UUID id) {
         return appointmentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Agendamento não encontrado com o ID: " + id));
     }
@@ -156,10 +155,9 @@ public class AppointmentService {
         }
     }
 
-    private void validateScheduleConflict(Long artistId, LocalDateTime newStart, Integer durationMinutes, Long excludeId) {
+    private void validateScheduleConflict(UUID artistId, LocalDateTime newStart, Integer durationMinutes, UUID excludeId) {
         LocalDateTime newEnd = newStart.plusMinutes(durationMinutes);
 
-        // Busca agendamentos próximos (24h antes e depois)
         List<Appointment> existingAppointments = appointmentRepository.findByArtistIdAndSessionDateBetween(
                 artistId,
                 newStart.minusDays(1),
@@ -177,7 +175,6 @@ public class AppointmentService {
             LocalDateTime existingStart = existing.getSessionDate();
             LocalDateTime existingEnd = existingStart.plusMinutes(existing.getEstimatedDurationMinutes());
 
-            // Verifica colisão: [newStart, newEnd] sobrepõe [existingStart, existingEnd]
             if (newStart.isBefore(existingEnd) && existingStart.isBefore(newEnd)) {
                 throw new BusinessRuleException(
                         "Conflito de agenda: O tatuador já possui um agendamento entre " +

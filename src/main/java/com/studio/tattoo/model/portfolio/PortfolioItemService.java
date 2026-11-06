@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class PortfolioItemService {
     private final TattooArtistService tattooArtistService;
 
     @Transactional(readOnly = true)
-    public List<PortfolioItemResponseDTO> findAll(Long artistId, String styleTag) {
+    public List<PortfolioItemResponseDTO> findAll(UUID artistId, String styleTag) {
         List<PortfolioItem> items;
 
         boolean hasArtist = artistId != null;
@@ -41,7 +42,7 @@ public class PortfolioItemService {
     }
 
     @Transactional(readOnly = true)
-    public PortfolioItemResponseDTO findById(Long id) {
+    public PortfolioItemResponseDTO findById(UUID id) {
         PortfolioItem item = portfolioItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Item do portfólio não encontrado com ID: " + id));
         return new PortfolioItemResponseDTO(item);
@@ -64,7 +65,7 @@ public class PortfolioItemService {
     }
 
     @Transactional
-    public PortfolioItemResponseDTO update(Long id, CreatePortfolioItemDTO dto, User authenticatedUser) {
+    public PortfolioItemResponseDTO update(UUID id, CreatePortfolioItemDTO dto, User authenticatedUser) {
         PortfolioItem item = portfolioItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Item do portfólio não encontrado com ID: " + id));
 
@@ -82,7 +83,7 @@ public class PortfolioItemService {
     }
 
     @Transactional
-    public void delete(Long id, User authenticatedUser) {
+    public void delete(UUID id, User authenticatedUser) {
         PortfolioItem item = portfolioItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Item do portfólio não encontrado com ID: " + id));
 

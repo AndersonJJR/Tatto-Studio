@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,29 +47,36 @@ class AppointmentServiceTest {
     private User artistUser;
     private Client client;
     private TattooArtist artist;
+    private UUID artistId;
+    private UUID clientId;
+    private UUID appointmentId;
 
     @BeforeEach
     void setUp() {
-        clientUser = User.builder().id(10L).name("João Cliente").email("joao@gmail.com").role(Role.ROLE_CLIENT).build();
-        artistUser = User.builder().id(20L).name("Ana Tattoo").email("ana@studio.com").role(Role.ROLE_ARTIST).build();
+        artistId = UUID.randomUUID();
+        clientId = UUID.randomUUID();
+        appointmentId = UUID.randomUUID();
 
-        client = Client.builder().id(1L).user(clientUser).name("João Cliente").phone("11999998888").build();
-        artist = TattooArtist.builder().id(2L).user(artistUser).name("Ana Tattoo").specialty("Fineline").build();
+        clientUser = User.builder().id(UUID.randomUUID()).name("João Cliente").email("joao@gmail.com").role(Role.ROLE_CLIENT).build();
+        artistUser = User.builder().id(UUID.randomUUID()).name("Ana Tattoo").email("ana@studio.com").role(Role.ROLE_ARTIST).build();
+
+        client = Client.builder().id(clientId).user(clientUser).name("João Cliente").phone("11999998888").build();
+        artist = TattooArtist.builder().id(artistId).user(artistUser).name("Ana Tattoo").specialty("Fineline").build();
     }
 
     @Test
     @DisplayName("Deve criar um agendamento com sucesso quando não há conflito de horários")
     void shouldCreateAppointmentSuccessfully() {
         LocalDateTime sessionDate = LocalDateTime.now().plusDays(2).withHour(14).withMinute(0);
-        CreateAppointmentDTO dto = new CreateAppointmentDTO(2L, sessionDate, 120, "Tatuagem dragão no braço");
+        CreateAppointmentDTO dto = new CreateAppointmentDTO(artistId, sessionDate, 120, "Tatuagem dragão no braço");
 
         when(clientRepository.findByUserEmail(clientUser.getEmail())).thenReturn(Optional.of(client));
-        when(tattooArtistRepository.findById(2L)).thenReturn(Optional.of(artist));
-        when(appointmentRepository.findByArtistIdAndSessionDateBetween(eq(2L), any(), any()))
+        when(tattooArtistRepository.findById(artistId)).thenReturn(Optional.of(artist));
+        when(appointmentRepository.findByArtistIdAndSessionDateBetween(eq(artistId), any(), any()))
                 .thenReturn(Collections.emptyList());
 
         Appointment savedAppointment = Appointment.builder()
-                .id(100L)
+                .id(appointmentId)
                 .sessionDate(sessionDate)
                 .estimatedDurationMinutes(120)
                 .status(AppointmentStatus.PENDING)
@@ -83,7 +91,7 @@ class AppointmentServiceTest {
         AppointmentResponseDTO response = appointmentService.create(dto, clientUser);
 
         assertNotNull(response);
-        assertEquals(100L, response.id());
+        assertEquals(appointmentId, response.id());
         assertEquals(AppointmentStatus.PENDING, response.status());
         assertEquals("João Cliente", response.clientName());
         assertEquals("Ana Tattoo", response.artistName());
@@ -94,19 +102,19 @@ class AppointmentServiceTest {
     @DisplayName("Deve lançar BusinessRuleException quando houver conflito de horário na agenda do tatuador")
     void shouldThrowExceptionWhenScheduleConflicts() {
         LocalDateTime sessionDate = LocalDateTime.now().plusDays(2).withHour(14).withMinute(0);
-        CreateAppointmentDTO dto = new CreateAppointmentDTO(2L, sessionDate, 120, "Tatuagem floral");
+        CreateAppointmentDTO dto = new CreateAppointmentDTO(artistId, sessionDate, 120, "Tatuagem floral");
 
         Appointment conflictingAppointment = Appointment.builder()
-                .id(99L)
-                .sessionDate(sessionDate.plusMinutes(30)) // Inicia 30 min depois (dentro do intervalo de 120 min)
+                .id(UUID.randomUUID())
+                .sessionDate(sessionDate.plusMinutes(30))
                 .estimatedDurationMinutes(60)
                 .status(AppointmentStatus.CONFIRMED)
                 .artist(artist)
                 .build();
 
         when(clientRepository.findByUserEmail(clientUser.getEmail())).thenReturn(Optional.of(client));
-        when(tattooArtistRepository.findById(2L)).thenReturn(Optional.of(artist));
-        when(appointmentRepository.findByArtistIdAndSessionDateBetween(eq(2L), any(), any()))
+        when(tattooArtistRepository.findById(artistId)).thenReturn(Optional.of(artist));
+        when(appointmentRepository.findByArtistIdAndSessionDateBetween(eq(artistId), any(), any()))
                 .thenReturn(List.of(conflictingAppointment));
 
         BusinessRuleException ex = assertThrows(BusinessRuleException.class, () ->
@@ -121,7 +129,7 @@ class AppointmentServiceTest {
     @DisplayName("Tatuador deve conseguir confirmar um agendamento da sua própria agenda")
     void shouldAllowArtistToConfirmAppointment() {
         Appointment appointment = Appointment.builder()
-                .id(101L)
+                .id(appointmentId)
                 .sessionDate(LocalDateTime.now().plusDays(1))
                 .estimatedDurationMinutes(90)
                 .status(AppointmentStatus.PENDING)
@@ -129,10 +137,10 @@ class AppointmentServiceTest {
                 .artist(artist)
                 .build();
 
-        when(appointmentRepository.findById(101L)).thenReturn(Optional.of(appointment));
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AppointmentResponseDTO response = appointmentService.updateStatus(101L, AppointmentStatus.CONFIRMED, artistUser);
+        AppointmentResponseDTO response = appointmentService.updateStatus(appointmentId, AppointmentStatus.CONFIRMED, artistUser);
 
         assertEquals(AppointmentStatus.CONFIRMED, response.status());
         verify(appointmentRepository).save(appointment);
@@ -142,7 +150,7 @@ class AppointmentServiceTest {
     @DisplayName("Cliente não deve conseguir confirmar um agendamento (apenas o tatuador pode confirmar)")
     void shouldDenyClientFromConfirmingAppointment() {
         Appointment appointment = Appointment.builder()
-                .id(101L)
+                .id(appointmentId)
                 .sessionDate(LocalDateTime.now().plusDays(1))
                 .estimatedDurationMinutes(90)
                 .status(AppointmentStatus.PENDING)
@@ -150,10 +158,10 @@ class AppointmentServiceTest {
                 .artist(artist)
                 .build();
 
-        when(appointmentRepository.findById(101L)).thenReturn(Optional.of(appointment));
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
 
         assertThrows(AccessDeniedException.class, () ->
-                appointmentService.updateStatus(101L, AppointmentStatus.CONFIRMED, clientUser)
+                appointmentService.updateStatus(appointmentId, AppointmentStatus.CONFIRMED, clientUser)
         );
 
         verify(appointmentRepository, never()).save(appointment);
@@ -163,7 +171,7 @@ class AppointmentServiceTest {
     @DisplayName("Cliente deve conseguir cancelar seu próprio agendamento")
     void shouldAllowClientToCancelAppointment() {
         Appointment appointment = Appointment.builder()
-                .id(102L)
+                .id(appointmentId)
                 .sessionDate(LocalDateTime.now().plusDays(3))
                 .estimatedDurationMinutes(60)
                 .status(AppointmentStatus.PENDING)
@@ -171,10 +179,10 @@ class AppointmentServiceTest {
                 .artist(artist)
                 .build();
 
-        when(appointmentRepository.findById(102L)).thenReturn(Optional.of(appointment));
+        when(appointmentRepository.findById(appointmentId)).thenReturn(Optional.of(appointment));
         when(appointmentRepository.save(any(Appointment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        AppointmentResponseDTO response = appointmentService.cancel(102L, clientUser);
+        AppointmentResponseDTO response = appointmentService.cancel(appointmentId, clientUser);
 
         assertEquals(AppointmentStatus.CANCELLED, response.status());
         verify(appointmentRepository).save(appointment);
