@@ -14,5 +14,13 @@ public record CreatePortfolioItemDTO(
         String imageUrl,
 
         @NotBlank(message = "A tag de estilo é obrigatória (ex: Old School, Realismo, Fineline, Oriental)")
-        String styleTag
-) {}
+        String styleTag,
+
+        String authorCredits,
+
+        Boolean isPublic
+) {
+    public CreatePortfolioItemDTO(String title, String description, String imageUrl, String styleTag) {
+        this(title, description, imageUrl, styleTag, null, true);
+    }
+}

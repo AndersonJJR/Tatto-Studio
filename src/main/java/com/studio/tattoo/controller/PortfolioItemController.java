@@ -3,6 +3,7 @@ package com.studio.tattoo.controller;
 import com.studio.tattoo.model.portfolio.PortfolioItemService;
 import com.studio.tattoo.model.portfolio.dto.CreatePortfolioItemDTO;
 import com.studio.tattoo.model.portfolio.dto.PortfolioItemResponseDTO;
+import com.studio.tattoo.model.portfolio.dto.UploadPortfolioItemDTO;
 import com.studio.tattoo.model.user.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +23,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/portfolio")
 @RequiredArgsConstructor
-@Tag(name = "Portfólio", description = "Endpoints para consulta pública e gerenciamento de itens de portfólio por tatuadores")
+@Tag(name = "Portfólio", description = "Endpoints para consulta pública e gerenciamento de imagens e itens de portfólio por tatuadores")
 public class PortfolioItemController {
 
     private final PortfolioItemService portfolioItemService;
@@ -40,10 +42,21 @@ public class PortfolioItemController {
         return ResponseEntity.ok(portfolioItemService.findById(id));
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ARTIST')")
     @SecurityRequirement(name = "Bearer Authentication")
-    @Operation(summary = "Cria um novo item no portfólio do tatuador autenticado")
+    @Operation(summary = "Realiza o upload de arquivo de imagem físico e cadastra o item no portfólio")
+    public ResponseEntity<PortfolioItemResponseDTO> upload(
+            @Valid @ModelAttribute UploadPortfolioItemDTO dto,
+            @AuthenticationPrincipal User authenticatedUser) {
+        PortfolioItemResponseDTO response = portfolioItemService.upload(dto, authenticatedUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasRole('ARTIST')")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @Operation(summary = "Cria um item no portfólio via payload JSON (com URL externa de imagem)")
     public ResponseEntity<PortfolioItemResponseDTO> create(
             @Valid @RequestBody CreatePortfolioItemDTO dto,
             @AuthenticationPrincipal User authenticatedUser) {
@@ -54,7 +67,7 @@ public class PortfolioItemController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ARTIST')")
     @SecurityRequirement(name = "Bearer Authentication")
-    @Operation(summary = "Atualiza um item do portfólio do tatuador autenticado")
+    @Operation(summary = "Atualiza os metadados de um item do portfólio do tatuador autenticado")
     public ResponseEntity<PortfolioItemResponseDTO> update(
             @PathVariable UUID id,
             @Valid @RequestBody CreatePortfolioItemDTO dto,
@@ -65,7 +78,7 @@ public class PortfolioItemController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ARTIST')")
     @SecurityRequirement(name = "Bearer Authentication")
-    @Operation(summary = "Remove um item do portfólio do tatuador autenticado")
+    @Operation(summary = "Remove um item do portfólio e apaga seu arquivo físico")
     public ResponseEntity<Void> delete(
             @PathVariable UUID id,
             @AuthenticationPrincipal User authenticatedUser) {

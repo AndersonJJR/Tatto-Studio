@@ -14,4 +14,12 @@ public interface PortfolioItemRepository extends JpaRepository<PortfolioItem, UU
     List<PortfolioItem> findByStyleTagIgnoreCase(String styleTag);
 
     List<PortfolioItem> findByArtistIdAndStyleTagIgnoreCase(UUID artistId, String styleTag);
+
+    List<PortfolioItem> findByIsPublicTrue();
+
+    List<PortfolioItem> findByIsPublicTrueAndStyleTagIgnoreCase(String styleTag);
+
+    List<PortfolioItem> findByIsPublicTrueAndArtistId(UUID artistId);
+
+    List<PortfolioItem> findByIsPublicTrueAndArtistIdAndStyleTagIgnoreCase(UUID artistId, String styleTag);
 }

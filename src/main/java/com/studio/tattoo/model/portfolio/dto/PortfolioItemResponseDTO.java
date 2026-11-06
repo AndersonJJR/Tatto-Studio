@@ -11,6 +11,8 @@ public record PortfolioItemResponseDTO(
         String description,
         String imageUrl,
         String styleTag,
+        String authorCredits,
+        Boolean isPublic,
         UUID artistId,
         String artistName,
         LocalDateTime createdAt
@@ -22,6 +24,8 @@ public record PortfolioItemResponseDTO(
                 item.getDescription(),
                 item.getImageUrl(),
                 item.getStyleTag(),
+                item.getAuthorCredits() != null ? item.getAuthorCredits() : (item.getArtist() != null ? item.getArtist().getName() : null),
+                item.getIsPublic() != null ? item.getIsPublic() : true,
                 item.getArtist() != null ? item.getArtist().getId() : null,
                 item.getArtist() != null ? item.getArtist().getName() : null,
                 item.getCreatedAt()
