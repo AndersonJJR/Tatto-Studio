@@ -32,5 +32,6 @@ build/
 ### VS Code ###
 .vscode/
 .env
-documentation.md
 uploads/
+files/
+erros.md
